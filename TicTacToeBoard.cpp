@@ -19,7 +19,8 @@ TicTacToeBoard::TicTacToeBoard()
 **/
 Piece TicTacToeBoard::toggleTurn()
 {
-  return Invalid;
+  turn = turn == X ? O : X;
+  return turn;
 }
 
 /**
@@ -31,18 +32,77 @@ Piece TicTacToeBoard::toggleTurn()
  * is over, no more pieces can be placed so attempting to place a piece
  * should neither change the board nor change whose turn it is.
 **/ 
-Piece TicTacToeBoard::placePiece(int row, int column)
+Piece TicTacToeBoard::placePiece(int row, int col)
 {
-  return Invalid;
+  if(row < 0 || row >= BOARDSIZE)
+    return Invalid;
+  if(col < 0 || col >= BOARDSIZE)
+    return Invalid;
+
+  Piece toPut = turn;
+  
+  //Make sure location is currently Blank
+  if(board[row][col] == Blank)
+  {
+    board[row][col] = toPut;
+    return toPut;
+  }
+  else
+  {
+    //Leave the existing piece
+    return board[row][col];
+  }
 }
 
 /**
  * Returns what piece is at the provided coordinates, or Blank if there
  * are no pieces there, or Invalid if the coordinates are out of bounds
 **/
-Piece TicTacToeBoard::getPiece(int row, int column)
+Piece TicTacToeBoard::getPiece(int row, int col)
 {
-  return Invalid;
+  if(row < 0 || row >= BOARDSIZE)
+    return Invalid;
+  if(col < 0 || col >= BOARDSIZE)
+    return Invalid;
+    
+  return board[row][col];
+}
+
+Piece TicTacToeBoard::checkFullRow(int row)
+{
+  Piece piece = getPiece(row, 0);
+  for(int col = 1; col < BOARDSIZE; col++)
+  {
+    Piece cur = getPiece(row, col);
+    if(cur != piece)
+      return Invalid;
+  }
+  return piece;
+}
+
+Piece TicTacToeBoard::checkFullCol(int col)
+{
+  Piece piece = getPiece(0, col);
+  for(int row = 1; row < BOARDSIZE; row++)
+  {
+    Piece cur = getPiece(row, col);
+    if(cur != piece)
+      return Invalid;
+  }
+  return piece;
+}
+
+Piece TicTacToeBoard::checkFullDiagonal(bool back)
+{
+  int end = BOARDSIZE-1;
+  Piece top = back ? getPiece(0,0) : getPiece(0,end);
+  Piece middle = getPiece(BOARDSIZE/2, BOARDSIZE/2);
+  Piece bottom = back ? getPiece(end,end) : getPiece(end,0);
+
+  if(top == middle && middle == bottom)
+    return top;
+  else
+    return Invalid;
 }
 
 /**
@@ -51,5 +111,40 @@ Piece TicTacToeBoard::getPiece(int row, int column)
 **/
 Piece TicTacToeBoard::getWinner()
 {
-  return Invalid;
+  for(int row = 0; row < BOARDSIZE; row++)
+  {
+    Piece rowWinner = checkFullRow(row);
+    if(rowWinner != Invalid && rowWinner != Blank)
+      return rowWinner;
+  }
+  
+  for(int col = 0; col < BOARDSIZE; col++)
+  {
+    Piece colWinner = checkFullCol(col);
+    if(colWinner != Invalid && colWinner != Blank)
+      return colWinner;
+  }
+  
+  Piece backDiagonalWinner = checkFullDiagonal(true);
+  if(backDiagonalWinner != Invalid && backDiagonalWinner != Blank)
+    return backDiagonalWinner;
+  Piece forwardDiagonalWinner = checkFullDiagonal(false);
+  if(forwardDiagonalWinner != Invalid && forwardDiagonalWinner != Blank)
+    return forwardDiagonalWinner;
+    
+  //No possible win case here, check for tie
+  for(int row = 0; row < BOARDSIZE; row++)
+  {
+    for(int col = 0; col < BOARDSIZE; col++)
+    {
+      if(getPiece(row, col) == Blank)
+      {
+        //Found a blank, so there's still a potential winner
+        return Invalid;//Not over yet
+      }
+    }
+  }
+  
+  //The board is full and there is no winner (tie)
+  return Blank;
 }

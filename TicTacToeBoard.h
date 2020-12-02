@@ -20,6 +20,9 @@ class TicTacToeBoard
     private:
         Piece board[BOARDSIZE][BOARDSIZE];
         Piece turn;
+        Piece checkFullRow(int row);
+        Piece checkFullCol(int col);
+        Piece checkFullDiagonal(bool back);
 
     public:
         //Constructor sets an empty board and specifies it is X's turn first
